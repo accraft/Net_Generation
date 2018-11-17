@@ -6,7 +6,8 @@
 .idea/**/tasks.xml
 .idea/dictionaries
 *.html
-shakespeare/
+eia_api_key.txt
+
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/

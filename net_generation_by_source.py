@@ -10,7 +10,7 @@ from datetime import datetime
 
 pp = pprint.PrettyPrinter(indent=4)
 
-eia_api_key = "a6b68dab9928c665bccd9a853c544092"
+eia_api_key = open(".\eia_api_key.txt", "r").read() 
 
 def get_url (url):
 	r = requests.get(url)

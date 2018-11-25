@@ -35,8 +35,11 @@ def get_seriesid_by_geo_time(series,geography='United States',timeperiod='monthl
 		
 def get_series_by_geo_time(series,geography='United States',timeperiod='monthly'):
 	series_id = get_seriesid_by_geo_time(series,geography,timeperiod)
-	series_id_results = get_url("http://api.eia.gov/series/?api_key=" + eia_api_key + "&series_id=" + series_id)
-	return series_id_results['series'][0]
+	if series_id == 'Does not exist':
+		return 'Does not exist'
+	else:
+		series_id_results = get_url("http://api.eia.gov/series/?api_key=" + eia_api_key + "&series_id=" + series_id)
+		return series_id_results['series'][0]
 #sample call, returns the series ID for coal. 
 #coal_series_test = get_series_by_geo_time(4,'United States','monthly')
 
@@ -60,7 +63,30 @@ def prep_source_df(geo_series_by_geo_time_result,name):
 	df_results = pd.DataFrame(data={'date':date_list,name:value_list})
 	return df_results	
 #gets source data and converts it into a two column dataframe: date, value. 
+
+
+def return_geographies(category_num=3,include_totals=False):
+	url = "http://api.eia.gov/category/?api_key=" + eia_api_key + "&category_id=" + str(category_num)
+	return_json = get_url(url)
 	
+	all_geographies_list = [x['name'].split(":")[2] for x in return_json['category']['childseries']]
+	#a sample name looks like this 'Net generation : all fuels : Arizona : all sectors : monthly', so it's necessary to only snag the geography
+	
+	all_geographies_list = list(set(all_geographies_list))
+	#de-dup because there are options to pull monthly, quarterly and annual data.
+	
+	#remove regional totals
+	all_geographies_list_extotals = [x for x in all_geographies_list if x.find('total') == -1]
+	
+	
+	if include_totals==0:
+		all_geographies_list_extotals.sort()
+		return all_geographies_list_extotals
+	else:
+		all_geographies_list.sort()
+		return all_geographies_list
+#returns a list of all geographies you can pull. 
+
 #takes as set of results from get_childseries, loops through them, and then appends the resulting data to a list
 #two_cat_sample = [x for x in get_childseries(3) if x['category_id'] < 8]
 #dataseries_sample = return_childseries_tograph(two_cat_sample)
@@ -68,7 +94,8 @@ def prep_source_df(geo_series_by_geo_time_result,name):
 def main():
 	#I know 3 is net generation by source
 	all_resultlist = get_childseries(3)
-	pp.pprint(all_resultlist)
+	pp.pprint(return_geographies(include_totals=True))
+	geography_input = raw_input('Input Geography from the above list: ')
 	#relevent_resultlist = [x for x in all_resultlist if x['category_id'] < 100 ]
 	#data_to_graph = return_childseries_tograph(relevent_resultlist)
 	
@@ -77,7 +104,10 @@ def main():
 	df_net_gen_results = pd.DataFrame(columns={'date'})
 	df_net_gen_results_ttm = pd.DataFrame(columns={'date'})
 	for source in all_resultlist_tograph:
-		df_tojoin = prep_source_df(get_series_by_geo_time(source['category_id'],'United States','monthly'),source['name'])
+		series_data = get_series_by_geo_time(source['category_id'],geography_input,'monthly')
+		if series_data == 'Does not exist':
+			continue
+		df_tojoin = prep_source_df(series_data,source['name'])
 		df_net_gen_results = df_net_gen_results.merge(df_tojoin,how='outer',on='date')
 		
 		df_tojoin_ttm = pd.DataFrame({'date':df_tojoin['date'] , source['name']:df_tojoin[source['name']][::-1].rolling(window=12).mean()[::-1]})
@@ -98,7 +128,7 @@ def main():
 	ttm_visible = [not i for i in non_ttm_visible]
 	
 	updatemenus = list([
-		dict(active=-1,
+		dict(active=0,
 			 buttons=list([   
 				dict(label = 'Actual',
 					 method = 'update',
@@ -110,7 +140,7 @@ def main():
 			)])
 
 	
-	layout = dict(title = 'Net Generation By Source',
+	layout = dict(title = 'Net Generation By Source - ' + geography_input,
               xaxis = dict(title = 'Month'),
               yaxis = dict(title = 'thousand megawatthours'),
 			  hovermode = 'closest',

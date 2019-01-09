@@ -95,7 +95,7 @@ def main():
 	#I know 3 is net generation by source
 	all_resultlist = get_childseries(3)
 	pp.pprint(return_geographies(include_totals=True))
-	geography_input = raw_input('Input Geography from the above list: ')
+	geography_input = input('Input Geography from the above list: ')
 	#relevent_resultlist = [x for x in all_resultlist if x['category_id'] < 100 ]
 	#data_to_graph = return_childseries_tograph(relevent_resultlist)
 	

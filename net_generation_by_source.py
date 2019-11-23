@@ -6,12 +6,11 @@ import plotly.graph_objs as go
 import plotly.plotly as py
 import plotly 
 import sys
-import os
 from datetime import datetime
 
 pp = pprint.PrettyPrinter(indent=4)
 
-eia_api_key = open(os.path.join(".","eia_api_key.txt"),"r").read() 
+eia_api_key = open(".\eia_api_key.txt", "r").read() 
 
 def get_url (url):
 	r = requests.get(url)

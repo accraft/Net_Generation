@@ -11,7 +11,8 @@ import os
 
 pp = pprint.PrettyPrinter(indent=4)
 
-eia_api_key = open("./eia_api_key.txt", "r").read() 
+script_path = os.path.dirname(os.path.abspath(__file__))
+eia_api_key = open(script_path+"/eia_api_key.txt", "r").read() 
 
 def get_url (url):
     r = requests.get(url)
@@ -159,10 +160,15 @@ def main():
               updatemenus = updatemenus,
               annotations = [go.layout.Annotation(showarrow=False,
                             text=footnote_text,
-                            x=0,
+                            xanchor='left',
                             xref='paper',
-                            y=-.05,
-                            yref='paper'
+                            xshift=-5,
+                            x=0,
+                            yanchor='top',
+                            yref='paper',
+                            yshift=-15,
+                            y=0,
+                            font=dict(color='grey')
                             )]
         )
     if args_in.outpath is not None:
@@ -173,6 +179,7 @@ def main():
             'data': chart_data,
             "layout": layout}
         ,filename=outfile
+        ,auto_open=False
         )
 
 if __name__ == '__main__':

@@ -19,7 +19,7 @@ def get_url (url):
     return r.json()
     
 def get_childseries (category_num):
-    url = "http://api.eia.gov/category/?api_key=" + eia_api_key + "&category_id=" + str(category_num)
+    url = "https://api.eia.gov/category/?api_key=" + eia_api_key + "&category_id=" + str(category_num)
     return_json = get_url(url)
     return {'title':return_json['category']['name']
             ,'data':return_json['category']['childcategories']}
@@ -27,20 +27,20 @@ def get_childseries (category_num):
 #get_childseries(3) 
 
 def get_seriesid_by_geo_time(series,geography='United States',timeperiod='monthly'):
-    series_json = get_url("http://api.eia.gov/category/?api_key=" + eia_api_key + "&category_id=" + str(series))
+    series_json = get_url("https://api.eia.gov/category/?api_key=" + eia_api_key + "&category_id=" + str(series))
     try: 
         return [x for x in series_json['category']["childseries"] if geography in x['name'] and timeperiod in x['name']][0]['series_id']
     except IndexError:
         return "Does not exist"
 #returns the category ID, which is used to actually pull the data. Sample call below:
 #get_seriesid_by_geo_time(4,"Oregon","quarterly")
-        
+
 def get_series_by_geo_time(series,geography='United States',timeperiod='monthly'):
     series_id = get_seriesid_by_geo_time(series,geography,timeperiod)
     if series_id == 'Does not exist':
         return 'Does not exist'
     else:
-        series_id_results = get_url("http://api.eia.gov/series/?api_key=" + eia_api_key + "&series_id=" + series_id)
+        series_id_results = get_url("https://api.eia.gov/series/?api_key=" + eia_api_key + "&series_id=" + series_id)
         return series_id_results['series'][0]
 #sample call, returns the series ID for coal. 
 #coal_series_test = get_series_by_geo_time(4,'United States','monthly')
@@ -66,7 +66,7 @@ def prep_source_df(geo_series_by_geo_time_result,name):
 #gets source data and converts it into a two column dataframe: date, value. 
 
 def return_geographies(category_num=3,include_totals=False):
-    url = "http://api.eia.gov/category/?api_key=" + eia_api_key + "&category_id=" + str(category_num)
+    url = "https://api.eia.gov/category/?api_key=" + eia_api_key + "&category_id=" + str(category_num)
     return_json = get_url(url)
     
     all_geographies_list = [x['name'].split(":")[2] for x in return_json['category']['childseries']]
@@ -187,12 +187,12 @@ if __name__ == '__main__':
 
 '''    
 #get list of all localities
-#coal_test = get_url("http://api.eia.gov/category/?api_key=a6b68dab9928c665bccd9a853c544092&category_id=4")
+#coal_test = get_url("https://api.eia.gov/category/?api_key=a6b68dab9928c665bccd9a853c544092&category_id=4")
 #set([x['name'].split(":")[2].strip() for x in coal_test['category']["childseries"]])
 
 
 for cat in parent['category']['childcategories']:
     category_id = cat['category_id']
-    url="http://api.eia.gov/category/?api_key=a6b68dab9928c665bccd9a853c544092&category_id=" + str(category_id)
+    url="https://api.eia.gov/category/?api_key=a6b68dab9928c665bccd9a853c544092&category_id=" + str(category_id)
     print(url)
 '''
